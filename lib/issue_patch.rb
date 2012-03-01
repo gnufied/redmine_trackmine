@@ -23,11 +23,16 @@ module IssuePatch
 
       after_create do |issue|
         pivotal_project_id = issue.project.mappings.first.tracker_project_id rescue nil
-        puts "Pivotal project id is #{pivotal_project_id}"
-        if pivotal_project_id
-          Trackmine.create_pivotal_story(issue,pivotal_project_id)
+        begin
+          puts "Pivotal project id is #{pivotal_project_id}"
+          if pivotal_project_id
+            Trackmine.create_pivotal_story(issue,pivotal_project_id)
+          end
+          puts "Creating pt story is done"
+        rescue => e
+          puts e.message
+          puts e.backtrace
         end
-        puts "Creating pt story is done"
         true
       end
 

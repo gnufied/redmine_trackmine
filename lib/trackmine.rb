@@ -164,7 +164,7 @@ module Trackmine
 
     # Updates Redmine issues- status and owner when story restarted
     def story_restart(issues, activity)
-      status = IssueStatus.find_by_name "Accepted"
+      status = IssueStatus.find_by_name "In Progress"
       email = get_user_email( activity['project_id'], activity['author'] )
       author = User.find_by_mail email
       update_issues(issues, activity['project_id'], { :status_id => status.id, :assigned_to_id => author.id })    
