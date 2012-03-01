@@ -27,7 +27,8 @@ module Trackmine
 
     # Sets PivotalTracker token using user credentials from config/trackmine.yml
     def set_token(email)
-      pivotal_token = get_credentials['pivotal_token']
+      pivotal_token = get_credentials[email] || get_credentials['default_pivotal_token']
+
       raise MissingCredentials.new("Missing credentials for trackmine.yml") if pivotal_token.nil?
       begin
         PivotalTracker::Client.token = pivotal_token
@@ -96,7 +97,7 @@ module Trackmine
         :name => issue.subject,
         :description => issue.pt_desc
       )
-      issue.custom_fields = [{'1' => pivotal_project_id},{'2' => story.id }]
+      issue.custom_field_values = {'1' => pivotal_project_id.to_s, '2' => story.id.to_s }
     end
 
     # Creates Redmine issues

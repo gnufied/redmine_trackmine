@@ -72,7 +72,7 @@ module IssuePatch
       end
 
       def pt_desc
-        description + "\n" + " Issue ##{self.id} on Redmine"
+        description
       end
 
     end
