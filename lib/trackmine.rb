@@ -88,7 +88,7 @@ module Trackmine
       return mapping
     end
 
-    def self.create_pivotal_story(issue,pivotal_project_id)
+    def create_pivotal_story(issue,pivotal_project_id)
       Trackmine.set_token('super_user')
       tracker_project = PivotalTracker::Project.find pivotal_project_id
       story = tracker_project.stories.create(
