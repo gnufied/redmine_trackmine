@@ -94,7 +94,7 @@ module Trackmine
       story = tracker_project.stories.create(
         :story_type => 'feature',
         :name => issue.subject,
-        :description => issue.i.description
+        :description => issue.pt_desc
       )
       issue.pivotal_project_id = pivotal_project_id
       issue.pivotal_story_id = story.id

@@ -27,6 +27,8 @@ module IssuePatch
         if pivotal_project_id
           Trackmine.create_pivotal_story(issue,pivotal_project_id)
         end
+        puts "Creating pt story is done"
+        true
       end
 
       # finding Issue by Pivotal Story ID
@@ -62,6 +64,10 @@ module IssuePatch
       # Pivotal Story ID getter
       def pivotal_story_id
         pivotal_custom_value('Pivotal Story ID').try(:value).to_i
+      end
+
+      def pt_desc
+        description + "\n" + " Issue ##{self.id} on Redmine"
       end
 
     end
