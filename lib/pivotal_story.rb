@@ -18,10 +18,14 @@ class PivotalStory
   end
 
   def story_type
-    map_type = mapping.story_types.detect { |pt_type, mine_type| mine_type == issue.tracker.name }
-    mapping[0]
-  rescue
-    'feature'
+    case issue.tracker.name
+      when 'Todo', 'Feature'
+        'feature'
+      when 'Defect', 'Bug'
+        'bug'
+      else
+        'chore'
+    end
   end
 
   def description

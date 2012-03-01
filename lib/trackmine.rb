@@ -52,7 +52,7 @@ module Trackmine
         if story['current_state'] == "started"
           story_restart(issues, activity)
         else
-          update_state(issue,activity)
+          issues.each {|issue| update_state(issue,story) }
         end
         story_url = get_story(activity).url
         update_issues(issues, activity['project_id'], {:description => story_url +"\r\n"+ story['description']}) if story['description']
@@ -71,15 +71,14 @@ module Trackmine
       end 
     end
 
-    def update_state(issue,story)
+    def update_state(issue, story)
       case story['current_state']
-        when 'finished'
+        when 'accepted'
           finished_issue_state = IssueStatus.find_by_name "Closed"
-          issue.update_attributes(:issue_id => finished_issue_state.id)
+          issue.update_attributes(:status_id => finished_issue_state.id)
         else
           finished_issue_state = IssueStatus.find_by_name "Review"
-          issue.update_attributes(:issue_id => finished_issue_state.id)
-        end
+          issue.update_attributes(:status_id => finished_issue_state.id)
       end
     end
     
