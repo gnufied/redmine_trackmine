@@ -26,7 +26,7 @@ module IssuePatch
         begin
           puts "Pivotal project id is #{pivotal_project_id}"
           if pivotal_project_id
-            Trackmine.create_pivotal_story(issue,pivotal_project_id)
+            new PivotalStory(issue,pivotal_project_id))
           end
           puts "Creating pt story is done"
         rescue => e

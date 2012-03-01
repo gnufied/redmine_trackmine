@@ -43,18 +43,20 @@ module Trackmine
       tracker_project = PivotalTracker::Project.find tracker_project_id
       tracker_project.stories.all.select{|s| !s.labels.nil?}.collect{|s| Unicode.downcase(s.labels) }.join(',').split(',').uniq # ugly code but works fine
     end
-        
+
     # Main method parsing PivotalTracker activity
     def read_activity(activity)
       story = activity['stories'][0] # PT API has changed! activity['stories']['story'] doesn't work any more
       issues = Issue.find_by_story_id story['id'].to_s
-      if issues.empty? and story['current_state'] == "started"
-        create_issues(activity)
-      else 
-        story_restart(issues, activity) if story['current_state'] == "started"
+      unless issues.empty?
+        if story['current_state'] == "started"
+          story_restart(issues, activity)
+        else
+          update_state(issue,activity)
+        end
         story_url = get_story(activity).url
-        update_issues(issues, activity['project_id'], { :description => story_url +"\r\n"+ story['description'] }) if story['description'] 
-        update_issues(issues, activity['project_id'] ,{ :subject => story['name'] }) if story['name'] 
+        update_issues(issues, activity['project_id'], {:description => story_url +"\r\n"+ story['description']}) if story['description']
+        update_issues(issues, activity['project_id'], {:subject => story['name']}) if story['name']
       end
     end
   
@@ -67,6 +69,18 @@ module Trackmine
       rescue => e
         raise WrongActivityData.new("Can't get email of the Tracker user: #{name} in project id: #{project_id}. " + e)
       end 
+    end
+
+    def update_state(issue,story)
+      case story['current_state']
+        when 'finished'
+          finished_issue_state = IssueStatus.find_by_name "Closed"
+          issue.update_attributes(:issue_id => finished_issue_state.id)
+        else
+          finished_issue_state = IssueStatus.find_by_name "Review"
+          issue.update_attributes(:issue_id => finished_issue_state.id)
+        end
+      end
     end
     
     # Return PivotalTracker story for given activity    
@@ -83,74 +97,7 @@ module Trackmine
       return story 
     end
 
-    # Return object which maps Redmine project with Tracker project
-    def get_mapping(tracker_project_id, label)
-      mapping = Mapping.find :first, :conditions=>['tracker_project_id=? AND label=? ', tracker_project_id, label.to_s]
-      return mapping
-    end
 
-    def create_pivotal_story(issue,pivotal_project_id)
-      Trackmine.set_token('super_user')
-      tracker_project = PivotalTracker::Project.find pivotal_project_id
-      story = tracker_project.stories.create(
-        :story_type => 'feature',
-        :name => issue.subject,
-        :description => issue.pt_desc
-      )
-      issue.custom_field_values = {'1' => pivotal_project_id.to_s, '2' => story.id.to_s }
-    end
-
-    # Creates Redmine issues
-    def create_issues(activity)
-      story = get_story(activity)
-      raise WrongActivityData.new("Can't get story with id= #{activity['stories'][0]['id']}") if story.nil?
-
-      # Getting story owners email
-      email = get_user_email( story.project_id, story.owned_by )
-      author = User.find_by_mail email
-
-      # Setting issue attributes
-      description = story.url + "\r\n" + story.description
-      status = IssueStatus.find_by_name "In Progress"
-      raise WrongTrackmineConfiguration.new("Can't find Redmine IssueStatus: 'In Progress' ") if status.nil?
-      issues = []
-      labels = story.labels.to_s.split(',')
-      labels = [''] if labels.blank?
-      labels.each do |label|
-        mapping = get_mapping(activity['project_id'], Unicode.downcase(label)) # to make sure UTF-8 works fine
-        next if mapping.try(:project).nil?
-        tracker = Tracker.find_by_name mapping.story_types[story.story_type] 
-        next if tracker.nil?  
-        estimated_hours = mapping.estimations[story.estimate.to_i.to_s].to_i 
-       
-        # Creating a new Redmine issue
-        issue = mapping.project.issues.create(:subject => story.name,
-                                              :description => description,
-                                              :author_id => author.id,
-                                              :assigned_to_id => author.id,
-                                              :tracker_id => tracker.id, 
-                                              :status_id => status.id,
-                                              :estimated_hours => estimated_hours)
-
-        # Setting value of 'Pivotal Project ID' issue's custom field
-        issue.pivotal_project_id = story.project_id
-
-        # Setting value of 'Pivotal Story ID' issue's custom field
-        issue.pivotal_story_id = story.id
-
-        # Adding comments (journals)
-        story.notes.all.each do |note|
-          user = User.find_by_mail get_user_email(story.project_id, note.author) 
-          journal = issue.journals.new :notes => note.text
-          journal.user_id = user.id unless user.nil?
-          journal.save
-        end
-
-        issues << issue
-      end 
-      return issues
-    end
-    
     # Updates Redmine issues
     def update_issues( issues, tracker_project_id, params ) 
       issues.each do |issue|
@@ -163,7 +110,7 @@ module Trackmine
 
     # Updates Redmine issues- status and owner when story restarted
     def story_restart(issues, activity)
-      status = IssueStatus.find_by_name "In Progress"
+      status = IssueStatus.find_by_name "Open"
       email = get_user_email( activity['project_id'], activity['author'] )
       author = User.find_by_mail email
       update_issues(issues, activity['project_id'], { :status_id => status.id, :assigned_to_id => author.id })    
@@ -193,6 +140,7 @@ module Trackmine
     def set_super_token
       set_token('super_user') if @token.nil?       
     end
+
   end
   
   # Error to be raised when any problem occured while parsing activity data
