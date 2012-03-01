@@ -96,9 +96,7 @@ module Trackmine
         :name => issue.subject,
         :description => issue.pt_desc
       )
-      issue.pivotal_project_id = pivotal_project_id
-      issue.pivotal_story_id = story.id
-      issue.save
+      issue.custom_fields = [{'1' => pivotal_project_id},{'2' => story.id }]
     end
 
     # Creates Redmine issues

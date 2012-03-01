@@ -21,7 +21,7 @@ module IssuePatch
         end
       end
 
-      after_create do |issue|
+      before_create do |issue|
         pivotal_project_id = issue.project.mappings.first.tracker_project_id rescue nil
         begin
           puts "Pivotal project id is #{pivotal_project_id}"
