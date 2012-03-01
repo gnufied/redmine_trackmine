@@ -11,6 +11,8 @@ class PivotalHandler < Sinatra::Base
       begin
         Trackmine.read_activity message_hash['activity']
       rescue => e
+        puts e.message
+        puts e.backtrace
         # Sending email when something is wrong
         TrackmineMailer.deliver_error_mail("Error while reading activity message from Pivotal Tracker: #{e}")
         return [202, "Not supported activity"]

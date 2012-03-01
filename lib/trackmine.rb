@@ -99,8 +99,8 @@ module Trackmine
 
       # Setting issue attributes
       description = story.url + "\r\n" + story.description
-      status = IssueStatus.find_by_name "Accepted"
-      raise WrongTrackmineConfiguration.new("Can't find Redmine IssueStatus: 'Accepted' ") if status.nil?  
+      status = IssueStatus.find_by_name "In Progress"
+      raise WrongTrackmineConfiguration.new("Can't find Redmine IssueStatus: 'In Progress' ") if status.nil?
       issues = []
       labels = story.labels.to_s.split(',')
       labels = [''] if labels.blank?
