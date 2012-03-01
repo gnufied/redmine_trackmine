@@ -27,10 +27,10 @@ module Trackmine
 
     # Sets PivotalTracker token using user credentials from config/trackmine.yml
     def set_token(email)
-      credential = get_credentials[email] 
-      raise MissingCredentials.new("Missing credentials for #{email} in trackmine.yml") if credential.nil? 
+      pivotal_token = get_credentials['pivotal_token']
+      raise MissingCredentials.new("Missing credentials for trackmine.yml") if pivotal_token.nil?
       begin
-        @token = PivotalTracker::Client.token(credential['email'], credential['password'])
+        @token = PivotalTracker::Client.token(pivotal_token)
         PivotalTracker::Client.use_ssl = true # to access pivotal projects which use https
       rescue => e
         raise WrongCredentials.new("Wrong Pivotal Tracker credentials in trackmine.yml. #{e}")
@@ -86,7 +86,20 @@ module Trackmine
     def get_mapping(tracker_project_id, label)
       mapping = Mapping.find :first, :conditions=>['tracker_project_id=? AND label=? ', tracker_project_id, label.to_s]
       return mapping
-    end    
+    end
+
+    def self.create_pivotal_story(issue,pivotal_project_id)
+      Trackmine.set_token('super_user')
+      tracker_project = PivotalTracker::Project.find pivotal_project_id
+      story = tracker_project.stories.create(
+        :story_type => 'feature',
+        :name => issue.subject,
+        :description => issue.i.description
+      )
+      issue.pivotal_project_id = pivotal_project_id
+      issue.pivotal_story_id = story.id
+      issue.save
+    end
 
     # Creates Redmine issues
     def create_issues(activity)
