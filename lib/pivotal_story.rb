@@ -37,7 +37,7 @@ class PivotalStory
   end
 
   def description
-    issue.description
+    issue.description + "\n" + " Linked to https://projects.brightbox.co.uk/issues/#{issue.id}"
   end
 
   def mapping

@@ -2,8 +2,8 @@ module Trackmine
 
   class << self
     attr_writer :error_notification
-    
-    # Gets data from config/trackmine.yml    
+
+    # Gets data from config/trackmine.yml
     def get_credentials
       trackmine_path = File.join(Rails.root, 'config', 'trackmine.yml')
       raise MissingTrackmineConfig.new("Missing trackmine.yml configuration file in /config") unless File.exist?(trackmine_path)
@@ -12,14 +12,14 @@ module Trackmine
 
     # Sets email for error notification
     def set_error_notification
-      @error_notification = get_credentials['error_notification'] 
+      @error_notification = get_credentials['error_notification']
     end
-    
+
     # Gets email for error notification
     def error_notification
       @error_notification
     end
- 
+
     # Returns all projects for the current user
     def projects
       PivotalTracker::Project.all
@@ -36,9 +36,9 @@ module Trackmine
       rescue => e
         raise WrongCredentials.new("Wrong Pivotal Tracker credentials in trackmine.yml. #{e}")
       end
-    end 
-      
-    # Returns all labels from specified Pivotal Tracker project   
+    end
+
+    # Returns all labels from specified Pivotal Tracker project
     def project_labels(tracker_project_id)
       tracker_project = PivotalTracker::Project.find tracker_project_id
       tracker_project.stories.all.select{|s| !s.labels.nil?}.collect{|s| Unicode.downcase(s.labels) }.join(',').split(',').uniq # ugly code but works fine
@@ -59,7 +59,7 @@ module Trackmine
         update_issues(issues, activity['project_id'], {:subject => story['name']}) if story['name']
       end
     end
-  
+
     # Finds author of the tracker activity and returns its email
     def get_user_email(project_id, name)
       begin
@@ -68,7 +68,7 @@ module Trackmine
          project.memberships.all.select{|m| m.name == name }[0].email
       rescue => e
         raise WrongActivityData.new("Can't get email of the Tracker user: #{name} in project id: #{project_id}. " + e)
-      end 
+      end
     end
 
     def update_state(issue, story)
@@ -81,8 +81,8 @@ module Trackmine
           issue.update_attributes(:status_id => finished_issue_state.id)
       end
     end
-    
-    # Return PivotalTracker story for given activity    
+
+    # Return PivotalTracker story for given activity
     def get_story(activity)
       begin
         set_super_token
@@ -91,14 +91,14 @@ module Trackmine
         story = PivotalTracker::Project.find(project_id).stories.find(story_id)
         raise 'Got empty story' if story.nil?
       rescue => e
-        raise WrongActivityData.new("Can't get story: #{story_id} from Pivotal Tracker project: #{project_id}. " + e) 
+        raise WrongActivityData.new("Can't get story: #{story_id} from Pivotal Tracker project: #{project_id}. " + e)
       end
-      return story 
+      return story
     end
 
 
     # Updates Redmine issues
-    def update_issues( issues, tracker_project_id, params ) 
+    def update_issues( issues, tracker_project_id, params )
       issues.each do |issue|
         # Before update checks if mapping still exist (no matter of labels- only projects mapping)
         unless issue.project.mappings.all( :conditions => ["tracker_project_id=?", tracker_project_id] ).empty?
@@ -112,51 +112,51 @@ module Trackmine
       status = IssueStatus.find_by_name "Open"
       email = get_user_email( activity['project_id'], activity['author'] )
       author = User.find_by_mail email
-      update_issues(issues, activity['project_id'], { :status_id => status.id, :assigned_to_id => author.id })    
+      update_issues(issues, activity['project_id'], { :status_id => status.id, :assigned_to_id => author.id })
     end
-    
-    # Finishes the story when the Redmine issue is closed    
+
+    # Finishes the story when the Redmine issue is closed
     def finish_story(project_id, story_id)
       begin
         set_super_token
-        story = PivotalTracker::Story.find(story_id, project_id) 
+        story = PivotalTracker::Story.find(story_id, project_id)
         case story.story_type
           when 'feature'
             story.update( :current_state => 'finished' )
           when 'bug'
             story.update( :current_state => 'finished' )
-          when 'chore'  
+          when 'chore'
             story.update( :current_state => 'accepted' )
         end
-      rescue => e 
-        raise PivotalTrackerError.new("Can't finish the story id:#{story_id}. " + e )     
+      rescue => e
+        raise PivotalTrackerError.new("Can't finish the story id:#{story_id}. " + e )
       end
     end
 
-    private 
-    
+    private
+
     # Gets and sets token for Pivotal Tracker 'Super User'
     def set_super_token
-      set_token('super_user') if @token.nil?       
+      set_token('super_user') if @token.nil?
     end
 
   end
-  
+
   # Error to be raised when any problem occured while parsing activity data
   class WrongActivityData < StandardError; end;
 
   # Error to be raised when trackmine.yml can't be found in /config
   class MissingTrackmineConfig < StandardError; end;
-  
+
   # Error to be raised when missing credentials for given email
   class MissingCredentials < StandardError; end;
-    
+
   # Error to be raised when wrong credentials given
   class WrongCredentials < StandardError; end;
 
-  # Error to be raised when missing Trackmine mapping. 
+  # Error to be raised when missing Trackmine mapping.
   class MissingTrackmineMapping < StandardError; end;
-  
+
   # Error to be raised when fails due to Trackmine configuration
   class WrongTrackmineConfiguration < StandardError; end;
 
@@ -165,4 +165,3 @@ module Trackmine
 
 
 end
-
