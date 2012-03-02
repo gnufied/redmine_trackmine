@@ -14,7 +14,15 @@ class PivotalStory
       :name => issue.subject,
       :description => description
     )
-    issue.custom_field_values = {'1' => pivotal_project_id.to_s, '2' => story.id.to_s}
+    issue.custom_field_values = {pivotal_project_field_id => pivotal_project_id.to_s, pivotal_story_field_id => story.id.to_s}
+  end
+
+  def pivotal_project_field_id
+    CustomField.find_by_name("Pivotal Project ID").id.to_s
+  end
+
+  def pivotal_story_field_id
+    CustomField.find_by_name("Pivotal Story ID").id.to_s
   end
 
   def story_type
