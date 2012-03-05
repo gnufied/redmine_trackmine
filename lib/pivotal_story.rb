@@ -11,7 +11,7 @@ class PivotalStory
 
     story = tracker_project.stories.create(
       :story_type => story_type,
-      :name => issue.subject,
+      :name => subject,
       :description => description
     )
     issue.custom_field_values = {pivotal_project_field_id => pivotal_project_id.to_s, pivotal_story_field_id => story.id.to_s}
@@ -34,6 +34,10 @@ class PivotalStory
       else
         'chore'
     end
+  end
+
+  def subject
+    issue.subject + "(##{issue.id})"
   end
 
   def description

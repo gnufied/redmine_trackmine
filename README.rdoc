@@ -56,34 +56,15 @@ Add valid Pivotal Tracker credentials in [redmine_app]/config/trackmine.yml
 
 
 Syntax:
-
-  [redmine_email]:
-    email: [pivotal_tracker_email]
-    password: [pivotal_tracker_password]   
-
-
-  super_user:
-    email: [pivotal_tracker_email]
-    password: [pivotal_tracker_password]   
+  default_pivotal_token: token
 
   error_notification:
     recipient: [email_for_error_notifications]
     from: "[information to emails FROM field]"
 
 trackmine.yml  
+  default_pivotal_token: token
 
-  foouser@example.net: 
-    email: foouser@example.net
-    password: 1111
-
-  baruser@example.net:
-    email: baruser2@fake.net
-    password: 2222
-
-  super_user:
-    email: admin@net.org
-    password: 1234
-  
   error_notification:
     recipient: errors@examplet.net
     from: "Trackmine Notifications <no-reply@example.net>" 
