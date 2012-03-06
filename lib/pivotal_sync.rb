@@ -20,9 +20,9 @@ class PivotalSync
   end
 
   def populate_already_synced_issues
-    @synced_issues = @project.stories.all.inject([]) do |synced_issues,story|
+    @synced_issues = @project.stories.all.inject({}) do |synced_issues,story|
       if story.name[/\(#(\d+)\)$/]
-        synced_issues << $1.to_i
+        synced_issues[$1.to_i] = story
       end
       synced_issues
     end
@@ -39,9 +39,13 @@ class PivotalSync
 
     issues = project.issues.open
     issues.each do |issue|
+      if story = @synced_issues[issue.id]
+        PivotalStory.new(issue,pivotal_project_id,story.id.to_s)
+      else
+        PivotalStory.new(issue,pivotal_project_id)
+      end
+      next
       print "."
-      next if @synced_issues.include(issue.id)
-      PivotalStory.new(issue,pivotal_project_id)
     end
     puts "All issues synced up"
   end

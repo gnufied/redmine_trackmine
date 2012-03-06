@@ -1,7 +1,7 @@
 class PivotalStory
   attr_accessor :issue, :pivotal_project_id
 
-  def initialize(issue, pivotal_project_id)
+  def initialize(issue, pivotal_project_id,pivotal_story_id = nil)
     self.issue = issue
     self.pivotal_project_id = pivotal_project_id
 
@@ -9,13 +9,33 @@ class PivotalStory
 
     tracker_project = PivotalTracker::Project.find pivotal_project_id
 
+    if pivotal_story_id
+      update(tracker_project,pivotal_story_id)
+    else
+      create(tracker_project)
+    end
+  end
+
+  def create(tracker_project)
     story = tracker_project.stories.create(
-      :story_type => story_type,
-      :name => subject,
-      :description => description,
-      :labels => project_label
-    )
-    issue.custom_field_values = {pivotal_project_field_id => pivotal_project_id.to_s, pivotal_story_field_id => story.id.to_s}
+                                    :story_type => story_type,
+                                    :name => subject,
+                                    :description => description,
+                                    :labels => project_label
+                                    )
+
+    issue.custom_field_values = {
+      pivotal_project_field_id => pivotal_project_id.to_s,
+      pivotal_story_field_id => story.id.to_s
+    }
+  end
+
+  def update(tracker_project,pivotal_story_id)
+    issue.custom_field_values = {
+      pivotal_project_field_id => pivotal_project_id.to_s,
+      pivotal_story_field_id => pivotal_story_id
+    }
+    issue.save!
   end
 
   def pivotal_project_field_id
