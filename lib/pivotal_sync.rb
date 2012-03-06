@@ -7,7 +7,7 @@ class PivotalSync
   attr_accessor :pivotal_project_id, :redmine_project_handle
 
   def initialize(pivotal_project_id,redmine_project_handle)
-    if pivotal_project_id.blank? || redmine_project_id.blank?
+    if pivotal_project_id.blank? || redmine_project_handle.blank?
       raise "Please specify redmine_project_[id|name] and pivotal_project_id as command line argument"
     end
 
