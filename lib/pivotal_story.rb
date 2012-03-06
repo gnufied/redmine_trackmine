@@ -13,7 +13,7 @@ class PivotalStory
       :story_type => story_type,
       :name => subject,
       :description => description,
-      :label => project_label
+      :labels => project_label
     )
     issue.custom_field_values = {pivotal_project_field_id => pivotal_project_id.to_s, pivotal_story_field_id => story.id.to_s}
   end
