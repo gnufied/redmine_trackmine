@@ -73,12 +73,12 @@ module Trackmine
 
     def update_state(issue, story)
       case story['current_state']
-        when 'accepted'
-          finished_issue_state = IssueStatus.find_by_name "Closed"
-          issue.update_attributes(:status_id => finished_issue_state.id)
-        else
-          finished_issue_state = IssueStatus.find_by_name "Review"
-          issue.update_attributes(:status_id => finished_issue_state.id)
+      when 'accepted'
+        finished_issue_state = IssueStatus.find_by_name "Closed"
+        issue.update_attributes(:status_id => finished_issue_state.id)
+      when 'delivered'
+        finished_issue_state = IssueStatus.find_by_name "Review"
+        issue.update_attributes(:status_id => finished_issue_state.id)
       end
     end
 

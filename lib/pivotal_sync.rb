@@ -17,6 +17,7 @@ class PivotalSync
     @project = PivotalTracker::Project.find(pivotal_project_id)
     raise "Invalid pivotal project id #{pivotal_project_id}" unless @project
     populate_already_synced_issues
+    sync_all_open_issues
   end
 
   def populate_already_synced_issues
