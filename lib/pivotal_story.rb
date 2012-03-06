@@ -12,7 +12,8 @@ class PivotalStory
     story = tracker_project.stories.create(
       :story_type => story_type,
       :name => subject,
-      :description => description
+      :description => description,
+      :label => project_label
     )
     issue.custom_field_values = {pivotal_project_field_id => pivotal_project_id.to_s, pivotal_story_field_id => story.id.to_s}
   end
@@ -23,6 +24,10 @@ class PivotalStory
 
   def pivotal_story_field_id
     CustomField.find_by_name("Pivotal Story ID").id.to_s
+  end
+
+  def project_label
+    issue.project.name
   end
 
   def story_type
