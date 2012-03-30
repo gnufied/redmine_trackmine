@@ -45,7 +45,7 @@ class PivotalSync
       else
         PivotalStory.new(issue,pivotal_project_id)
       end
-      next
+      issue.save!
       print "."
     end
     puts "All issues synced up"
