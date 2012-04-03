@@ -32,13 +32,18 @@ class PivotalStory
   end
 
   def requester(tracker_project)
-    tracker_project.memberships.all.select { |m| m.email == issue.author.mail }[0].name
+    members = tracker_project.memberships.all.select { |m| m.email == issue.author.mail }
+    unless members.blank?
+      members[0].name
+    else
+      nil
+    end
   end
 
   def update(tracker_project,pivotal_story_id)
     pivotal_story = tracker_project.stories.find(pivotal_story_id)
     pivotal_story.update(:requested_by => requester(tracker_project))
-    
+
     issue.custom_field_values = {
       pivotal_project_field_id => pivotal_project_id.to_s,
       pivotal_story_field_id => pivotal_story_id
