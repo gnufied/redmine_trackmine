@@ -37,12 +37,12 @@ class PivotalSync
   def sync_all_open_issues
     project = redmine_project()
     raise "Invalid redmine project #{redmine_project_handle}" unless project
-
+    $stdout.sync = true
     issues = project.issues.open
     issues.each do |issue|
       pivotal_story = @synced_issues[issue.id]
       sync_issue(issue,pivotal_project_id,pivotal_story)
-      print "."
+      $stdout.print "."
     end
     puts "All issues synced up"
   end
