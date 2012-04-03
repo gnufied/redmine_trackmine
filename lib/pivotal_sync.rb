@@ -40,15 +40,22 @@ class PivotalSync
 
     issues = project.issues.open
     issues.each do |issue|
-      if story = @synced_issues[issue.id]
-        PivotalStory.new(issue,pivotal_project_id,story.id.to_s)
-      else
-        PivotalStory.new(issue,pivotal_project_id)
-      end
-      issue.save!
+      pivotal_story = @synced_issues[issue.id]
+      sync_issue(issue,pivotal_project_id,pivotal_story)
       print "."
     end
     puts "All issues synced up"
+  end
+
+  def sync_issue(issue,pivotal_project_id,pivotal_story)
+    if pivotal_story
+      PivotalStory.new(issue,pivotal_project_id,pivotal_story.id.to_s)
+    else
+      PivotalStory.new(issue,pivotal_project_id)
+    end
+    issue.save!
+  rescue
+    puts "Failed to sync ticket #{issue.id}"
   end
 
 end
