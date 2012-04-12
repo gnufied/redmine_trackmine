@@ -120,14 +120,7 @@ module Trackmine
       begin
         set_super_token
         story = PivotalTracker::Story.find(story_id, project_id)
-        case story.story_type
-          when 'feature'
-            story.update( :current_state => 'finished' )
-          when 'bug'
-            story.update( :current_state => 'finished' )
-          when 'chore'
-            story.update( :current_state => 'accepted' )
-        end
+        story.update( :current_state => 'accepted' )
       rescue => e
         raise PivotalTrackerError.new("Can't finish the story id:#{story_id}. " + e )
       end
